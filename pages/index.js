@@ -11,6 +11,7 @@ class Index extends React.Component {
         <TitleBar
           primaryAction={{
             content: 'Select products',
+            onAction: () => this.setState({ open: true }),
           }}
         />
         <ResourcePicker
