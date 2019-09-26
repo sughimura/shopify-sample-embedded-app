@@ -37,7 +37,8 @@ class Index extends React.Component {
     );
   }
   handleSelection = (resources) => {
-    this.setState({ open: false })
+    const idsFromResources = resources.selection.map((product) => product.id);
+    this.setState({ open: false });
     console.log(resources)
   };
 }
