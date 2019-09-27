@@ -1,4 +1,5 @@
 import {
+  Banner,
   Card,
   DisplayText,
   Form,
@@ -6,15 +7,33 @@ import {
   Layout,
   Page,
   PageActions,
-  TextField
+  TextField,
+  Toast,
 } from '@shopify/polaris';
 import store from 'store-js';
+import gql from 'graphql-tag';
+import { Mutation } from 'react-apollo';
+
+const UPDATE_PRICE = gql`
+  mutation productVariantUpdate($input: ProductVariantInput!) {
+    productVariantUpdate(input: $input) {
+      product {
+        title
+      }
+      productVariant {
+        id
+        price
+      }
+    }
+  }
+`;
 
 class EditProduct extends React.Component {
   state = {
     discount: '',
     price: '',
-    variantId: ''
+    variantId: '',
+    showToast: false,
   };
 
   componentDidMount() {
@@ -23,10 +42,27 @@ class EditProduct extends React.Component {
 
   render() {
     const { name, price, discount, variantId } = this.state;
-
+    return (
+      <Mutation
+        mutation={UPDATE_PRICE}
+      >
+        {(handleSubmit, {error, data}) => {
+          const showError = error && (
+            <Banner status="critical">{error.message}</Banner>
+          );
+          const showToast = data && data.productVariantUpdate && (
+            <Toast
+              content="Sucessfully updated"
+              onDismiss={() => this.setState({ showToast: false })}
+            />
+          );
     return (
       <Page>
         <Layout>
+          {showToast}
+          <Layout.Section>
+            {showError}
+          </Layout.Section>
           <Layout.Section>
             <DisplayText size="large">{name}</DisplayText>
             <Form>
@@ -58,7 +94,13 @@ class EditProduct extends React.Component {
                   {
                     content: 'Save',
                     onAction: () => {
-                      console.log('submitted');
+                      const productVariableInput = {
+                        id: variantId,
+                        price: discount,
+                      };
+                      handleSubmit({
+                        variables: { input: productVariableInput },
+                      });
                     }
                   }
                 ]}
@@ -72,6 +114,9 @@ class EditProduct extends React.Component {
           </Layout.Section>
         </Layout>
       </Page>
+    );
+        }}
+      </Mutation>
     );
   }
 
